@@ -2,97 +2,109 @@ package com.conexionapirest.conexionapirest.controller;
 
 import com.conexionapirest.conexionapirest.apirepository.AddressRepository;
 import com.conexionapirest.conexionapirest.apirepository.ContactInfoRepository;
+import com.conexionapirest.conexionapirest.apirepository.CourseRepository;
 import com.conexionapirest.conexionapirest.apirepository.StudentRepository;
 import com.conexionapirest.conexionapirest.model.Address;
 import com.conexionapirest.conexionapirest.model.ContactInfo;
+import com.conexionapirest.conexionapirest.model.Course;
 import com.conexionapirest.conexionapirest.model.Student;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
 @RestController
 @RequestMapping("/students")
 public class StudentController {
 
     @Autowired
     private StudentRepository studentRepository;
+
     @Autowired
     private ContactInfoRepository contactInfoRepository;
+
     @Autowired
     private AddressRepository addressRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
 
     @GetMapping
     public List<Student> getStudent() {
         return studentRepository.findAll();
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<Student> getStudentById(@PathVariable Long id) {
+        Optional<Student> student = studentRepository.findById(id);
+        return student.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
     @PostMapping
-    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
-        // Establish the relationships
+    public Student createStudent(@RequestBody Student student) {
         ContactInfo contactInfo = student.getContactInfo();
-        Address address = contactInfo.getAddress();
+        Address address= contactInfo.getAddress();
 
         contactInfo.setStudent(student);
         address.setContactInfo(contactInfo);
 
-        // Save entities in the correct order
-        Address savedAddress = addressRepository.save(address);
-        contactInfo.setAddress(savedAddress);
+        Set<Course> courses = new HashSet<>();
+        for (Course course : student.getCourses()) {
+            courses.add(courseRepository.findById(course.getId()).orElse(course));
+        }
+        student.setCourses(courses);
 
-        ContactInfo savedContactInfo = contactInfoRepository.save(contactInfo);
-        student.setContactInfo(savedContactInfo);
-
-        Student savedStudent = studentRepository.save(student);
-
-        return ResponseEntity.ok(savedStudent);
+        return studentRepository.save(student);
     }
+
 
     @PutMapping("/{id}")
-    public Student updateStudent(@PathVariable("id") Long id, @RequestBody Student studentDetails) {
-        Optional<Student> optionalStudent = studentRepository.findById(id);
-
-        if (optionalStudent.isPresent()) {
-            Student existingStudent = optionalStudent.get();
-            existingStudent.setName(studentDetails.getName());
-            existingStudent.setDateBirth(studentDetails.getDateBirth());
-
-            ContactInfo existingContactInfo = existingStudent.getContactInfo();
-            ContactInfo newContactInfo = studentDetails.getContactInfo();
-
-            if (newContactInfo != null) {
-                existingContactInfo.setEmail(newContactInfo.getEmail());
-                existingContactInfo.setPhone(newContactInfo.getPhone());
-                existingContactInfo.setStudent(existingStudent);
-            }
-
-            Address existingAddress = existingContactInfo.getAddress();
-            Address newAddress = newContactInfo != null ? newContactInfo.getAddress() : null;
-
-            if (newAddress != null) {
-                existingAddress.setProvince(newAddress.getProvince());
-                existingAddress.setDistrict(newAddress.getDistrict());
-                existingAddress.setStreet(newAddress.getStreet());
-                existingAddress.setSquare(newAddress.getSquare());
-                existingAddress.setHouseNum(newAddress.getHouseNum());
-                existingAddress.setZip(newAddress.getZip());
-                existingAddress.setContactInfo(existingContactInfo);
-            }
-
-            return studentRepository.save(existingStudent);
-        } else {
-            throw new RuntimeException("Student not found with id " + id);
+    public ResponseEntity<Student> updateStudent(@PathVariable Long id, @RequestBody Student studentDetails) {
+        Optional<Student> studentOptional = studentRepository.findById(id);
+        if (!studentOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
         }
+
+        Student student = studentOptional.get();
+        student.setName(studentDetails.getName());
+        student.setDateBirth(studentDetails.getDateBirth());
+
+        ContactInfo contactInfo = studentDetails.getContactInfo();
+        if (contactInfo != null) {
+            contactInfo.setStudent(student);
+            Address address = contactInfo.getAddress();
+            if (address != null) {
+                address.setContactInfo(contactInfo);
+                addressRepository.save(address);
+            }
+            contactInfoRepository.save(contactInfo);
+        }
+
+        // Update the courses if they exist
+        if (studentDetails.getCourses() != null) {
+            Set<Course> courses = new HashSet<>();
+            for (Course course : studentDetails.getCourses()) {
+                courses.add(courseRepository.findById(course.getId()).orElse(course));
+            }
+            student.setCourses(courses);
+        }
+
+        Student updatedStudent = studentRepository.save(student);
+        return ResponseEntity.ok(updatedStudent);
     }
-    @DeleteMapping("/{id}")
-    public void deleteStudent(@PathVariable Long id) {
-        Optional<Student> optionalStudent = studentRepository.findById(id);
 
-        if (optionalStudent.isPresent()) {
-            studentRepository.delete(optionalStudent.get());
-        } else {
-            throw new RuntimeException("Student not found with id " + id);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+        Optional<Student> studentOptional = studentRepository.findById(id);
+        if (!studentOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
         }
+
+        studentRepository.delete(studentOptional.get());
+        return ResponseEntity.noContent().build();
     }
 }
+

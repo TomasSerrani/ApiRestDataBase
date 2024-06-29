@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.aspectj.weaver.AjAttribute;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -18,9 +22,16 @@ public class Instructor {
 
     @Column(name = "name",nullable = false)
     private String name;
+    @OneToMany(mappedBy = "instructor",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private Set<Course> courses= new HashSet<>();
 
     public Instructor(String name) {
         this.name = name;
+    }
+
+    public void addCourse (Course course) {
+        courses.add(course);
+        course.setInstructor(this);
     }
 
     @Override

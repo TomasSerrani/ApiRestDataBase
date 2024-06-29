@@ -1,9 +1,13 @@
 package com.conexionapirest.conexionapirest.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -22,6 +26,13 @@ public class Course {
     public Course(String name) {
         this.name = name;
     }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
+    private Instructor instructor;
+
+    @ManyToMany(mappedBy = "courses")
+    private Set<Student> students = new HashSet<>();
 
     @Override
     public String toString() {

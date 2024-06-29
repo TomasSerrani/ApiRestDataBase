@@ -13,6 +13,7 @@ import lombok.Setter;
 @Table(name = "contact_info")
 public class ContactInfo {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "email", nullable = false)
@@ -21,8 +22,7 @@ public class ContactInfo {
     @Column(name = "phone", nullable = false)
     private String phone;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
+    @OneToOne
     @JoinColumn(name = "student_id")
     @JsonIgnore
     private Student student;
@@ -30,11 +30,13 @@ public class ContactInfo {
     @OneToOne(mappedBy = "contactInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Address address;
 
+
     public ContactInfo(String email, String phone, Address address) {
         this.email = email;
         this.phone = phone;
         this.address = address;
     }
+
 
     @Override
     public String toString() {

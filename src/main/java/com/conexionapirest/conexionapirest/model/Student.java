@@ -7,6 +7,8 @@ import lombok.Setter;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -15,7 +17,7 @@ import java.time.LocalDate;
 @Table(name = "student")
 public class Student {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     @Column(name="name", nullable = false)
@@ -24,10 +26,14 @@ public class Student {
     @Column(name="dateBirth", nullable = false)
     private LocalDate dateBirth;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "student")
-    @JsonIgnore
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private ContactInfo contactInfo;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "student_course",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns= @JoinColumn(name = "course_id"))
+    private Set<Course> courses = new HashSet<>();
 
     public Student(String name, LocalDate dateBirth, ContactInfo contactInfo) {
         this.name = name;

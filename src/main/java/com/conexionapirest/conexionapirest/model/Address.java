@@ -13,6 +13,7 @@ import lombok.Setter;
 @Table(name = "address")
 public class Address {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "province", nullable = false)
@@ -33,8 +34,7 @@ public class Address {
     @Column(name = "zip", nullable = false)
     private String zip;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
+    @OneToOne
     @JoinColumn(name = "contact_info_id")
     @JsonIgnore
     private ContactInfo contactInfo;
@@ -47,6 +47,7 @@ public class Address {
         this.zip = zip;
         this.houseNum = houseNum;
     }
+
 
     @Override
     public String toString() {
