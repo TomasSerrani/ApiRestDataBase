@@ -14,7 +14,7 @@ import lombok.Setter;
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name = "province", nullable = false)
     private String province;
@@ -29,7 +29,7 @@ public class Address {
     private String square;
 
     @Column(name = "houseNum", nullable = false)
-    private int houseNum;
+    private String houseNum;
 
     @Column(name = "zip", nullable = false)
     private String zip;
@@ -39,7 +39,7 @@ public class Address {
     @JsonIgnore
     private ContactInfo contactInfo;
 
-    public Address(String province, String district, String street, String square, String zip, int houseNum) {
+    public Address(String province, String district, String street, String square, String zip, String houseNum) {
         this.province = province;
         this.district = district;
         this.street = street;

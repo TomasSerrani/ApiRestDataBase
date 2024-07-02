@@ -18,7 +18,7 @@ public class Instructor {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "instructor_generator")
     @SequenceGenerator(name = "instructor_generator",allocationSize = 1)
-    private long id;
+    private Long id;
 
     @Column(name = "name",nullable = false)
     private String name;
