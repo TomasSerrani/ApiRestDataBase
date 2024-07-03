@@ -27,7 +27,7 @@ public class ContactInfo {
     @JsonIgnore
     private Student student;
 
-    @OneToOne(mappedBy = "contactInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "contactInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
     private Address address;
 
 

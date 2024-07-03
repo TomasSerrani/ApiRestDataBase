@@ -178,11 +178,14 @@ public class StudentController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         Optional<Student> studentOptional = studentRepository.findById(id);
+        Optional<ContactInfo> contactInfoOptional = contactInfoRepository.findById(id);
+        Optional<Address> addressOptional = addressRepository.findById(id);
         if (!studentOptional.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-
         studentRepository.delete(studentOptional.get());
+        contactInfoRepository.delete(contactInfoOptional.get());
+        addressRepository.delete(addressOptional.get());
         return ResponseEntity.noContent().build();
     }
 }

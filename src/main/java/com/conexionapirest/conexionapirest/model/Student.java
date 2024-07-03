@@ -26,7 +26,7 @@ public class Student {
     @Column(name="dateBirth", nullable = false)
     private LocalDate dateBirth;
 
-    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private ContactInfo contactInfo;
 
     @ManyToMany(cascade = CascadeType.ALL)
